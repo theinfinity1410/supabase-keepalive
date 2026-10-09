@@ -25,9 +25,14 @@ jobs:
         env:
           CLIO_ANON_KEY: ${{ secrets.SUPABASE_CLIO_ANON_KEY }}
         run: |
-          code=$(curl -sS -m 30 -o /tmp/rest.json -w '%{http_code}' "https://xcqrbouaueebzycrotrb.supabase.co/rest/v1/" -H "apikey: $CLIO_ANON_KEY" -H "Authorization: Bearer $CLIO_ANON_KEY")
+          fail=0
+          code=$(curl -sS -m 30 -o /tmp/rest.json -w '%{http_code}' "https://xcqrbouaueebzycrotrb.supabase.co/rest/v1/keepalive_probe?select=*&limit=1" -H "apikey: $CLIO_ANON_KEY" -H "Authorization: Bearer $CLIO_ANON_KEY")
           echo "clio rest http=$code"
-          [ "$code" = "200" ]
+          if [ "$code" != "200" ] && [ "$code" != "404" ]; then fail=1; fi
+          code=$(curl -sS -m 30 -o /tmp/auth.json -w '%{http_code}' "https://xcqrbouaueebzycrotrb.supabase.co/auth/v1/settings" -H "apikey: $CLIO_ANON_KEY")
+          echo "clio auth http=$code"
+          if [ "$code" != "200" ]; then fail=1; fi
+          exit $fail
       - name: Heartbeat commit
         run: |
           date -u +"%Y-%m-%dT%H:%M:%SZ" > heartbeat.txt
