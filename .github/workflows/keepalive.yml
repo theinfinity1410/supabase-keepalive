@@ -21,18 +21,24 @@ jobs:
             if [ "$code" != "201" ] && [ "$code" != "200" ]; then fail=1; fi
           done
           exit $fail
-      - name: Read-only REST request to clio with anon key
+      - name: Read-only REST and auth requests with anon keys
         continue-on-error: true
         env:
           CLIO_ANON_KEY: ${{ secrets.SUPABASE_CLIO_ANON_KEY }}
+          DEV_ANON_KEY: ${{ secrets.SUPABASE_DEV_ANON_KEY }}
         run: |
           fail=0
-          code=$(curl -sS -m 30 -o /tmp/rest.json -w '%{http_code}' "https://xcqrbouaueebzycrotrb.supabase.co/rest/v1/keepalive_probe?select=*&limit=1" -H "apikey: $CLIO_ANON_KEY" -H "Authorization: Bearer $CLIO_ANON_KEY")
-          echo "clio rest http=$code"
-          if [ "$code" != "200" ] && [ "$code" != "404" ]; then fail=1; fi
-          code=$(curl -sS -m 30 -o /tmp/auth.json -w '%{http_code}' "https://xcqrbouaueebzycrotrb.supabase.co/auth/v1/settings" -H "apikey: $CLIO_ANON_KEY")
-          echo "clio auth http=$code"
-          if [ "$code" != "200" ]; then fail=1; fi
+          probe() {
+            name=$1; ref=$2; key=$3
+            code=$(curl -sS -m 30 -o /tmp/rest.json -w '%{http_code}' "https://$ref.supabase.co/rest/v1/keepalive_probe?select=*&limit=1" -H "apikey: $key" -H "Authorization: Bearer $key")
+            echo "$name rest http=$code"
+            if [ "$code" != "200" ] && [ "$code" != "404" ]; then fail=1; fi
+            code=$(curl -sS -m 30 -o /tmp/auth.json -w '%{http_code}' "https://$ref.supabase.co/auth/v1/settings" -H "apikey: $key")
+            echo "$name auth http=$code"
+            if [ "$code" != "200" ]; then fail=1; fi
+          }
+          probe clio xcqrbouaueebzycrotrb "$CLIO_ANON_KEY"
+          probe swayam_dev vfhfeerzdpucaofkmmir "$DEV_ANON_KEY"
           exit $fail
       - name: Heartbeat commit
         run: |
