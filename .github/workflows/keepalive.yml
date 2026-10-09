@@ -24,8 +24,8 @@ jobs:
       - name: Read-only REST and auth requests with anon keys
         continue-on-error: true
         env:
-          CLIO_ANON_KEY: ${{ secrets.SUPABASE_CLIO_ANON_KEY }}
-          DEV_ANON_KEY: ${{ secrets.SUPABASE_DEV_ANON_KEY }}
+          CLIO_ANON_KEY: ${{ secrets.SUPABASE_CLIO_ANON_KEY_V2 }}
+          DEV_ANON_KEY: ${{ secrets.SUPABASE_DEV_ANON_KEY_V2 }}
         run: |
           fail=0
           probe() {
