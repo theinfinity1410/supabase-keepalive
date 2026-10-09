@@ -22,6 +22,7 @@ jobs:
           done
           exit $fail
       - name: Read-only REST request to clio with anon key
+        continue-on-error: true
         env:
           CLIO_ANON_KEY: ${{ secrets.SUPABASE_CLIO_ANON_KEY }}
         run: |
