@@ -30,7 +30,7 @@ jobs:
           fail=0
           probe() {
             name=$1; ref=$2; key=$(printf %s "$3" | tr -d '[:space:]"')
-            echo "$name key length=${#key} prefix=$(printf %s "$key" | head -c 3)"
+            echo "$name key length=${#key}"
             code=$(curl -sS -m 30 -o /tmp/rest.json -w '%{http_code}' "https://$ref.supabase.co/rest/v1/keepalive_probe?select=*&limit=1" -H "apikey: $key" -H "Authorization: Bearer $key")
             echo "$name rest http=$code"
             if [ "$code" != "200" ] && [ "$code" != "404" ]; then fail=1; fi
